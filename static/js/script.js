@@ -142,7 +142,7 @@
                             e("div", "name", `${f.sname} <span class="N95">[ ${f.rollno} ]</span>`),
                             e("div", "collage", `🏛️ ${f.college_name}`)
                         ]),
-                        e("div", "N96", [e("span", "N97", `Subject: ${k}`), e("div", "rank", `Percentage : ${f.f_percentage}`)])
+                        e("div", "N96", [e("span", "N97", `${k}`), e("div", "rank", `${f.f_percentage} %`)])
                     ]),
                     e("div", "N98", [btn])
                 ]));
