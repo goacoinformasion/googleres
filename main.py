@@ -444,6 +444,11 @@ def create_student_result(record: StudentResultSchema, db: Session = Depends(get
                 "detail": f"Record with slno {record.slno} already exists.",
             },
         )
+        # raise HTTPException(
+        #     status_code=400,
+        #     insurt=False,
+        #     detail=f"Record with slno {record.slno} already exists.",
+        # )
 
     new_record = StudentResultModel(**record.model_dump())
     db.add(new_record)
@@ -482,6 +487,12 @@ def get_result_by_rollno(rollno: str, db: Session = Depends(get_db)):
 # ALL SUBJECT TOPPERS IN A SINGLE DICTIONARY
 @app.get("/toppers")
 def get_all_subject_toppers(db: Session = Depends(get_db)):
+    """
+    Har ek subject ka topper (highest s3_percentage) nikal kar
+    { "Botany": {...student_data...}, "Chemistry": {...student_data...} }
+    format me return karta hai.
+    """
+    # 1. Sabhi unique subjects nikalen
     distinct_subjects = db.query(StudentResultModel.subject).distinct().all()
     subjects = [s[0] for s in distinct_subjects if s[0]]
 
@@ -492,6 +503,7 @@ def get_all_subject_toppers(db: Session = Depends(get_db)):
 
     toppers_summary = {}
 
+    # 2. Har subject ke highest s3_percentage waale student ko fetch karein
     for subj in subjects:
         top_student = (
             db.query(StudentResultModel)
@@ -505,12 +517,17 @@ def get_all_subject_toppers(db: Session = Depends(get_db)):
     return toppers_summary
 
 
-# 6. SUBJECT-BASED ENDPOINTS
+# 6. NEW SUBJECT-BASED ENDPOINTS (3 New Methods)
 
 
-# METHOD 1: Subject wise Topper
+# METHOD 1: Subject wise Topper (Highest s3_percentage wala student)
 @app.get("/toppers/subject/{subject_name}", response_model=StudentResultSchema)
 def get_subject_topper_s3(subject_name: str, db: Session = Depends(get_db)):
+    """
+    Ek specific subject ke andar jis student ki s3_percentage sabse zyada (highest)
+    hai, use return karega.
+    """
+    # SQLite me s3_percentage string format me ho sakta hai, isliye CAST karke Float me convert kar rahe hain
     topper = (
         db.query(StudentResultModel)
         .filter(func.lower(StudentResultModel.subject) == subject_name.lower())
@@ -526,11 +543,14 @@ def get_subject_topper_s3(subject_name: str, db: Session = Depends(get_db)):
     return topper
 
 
-# METHOD 2: Subject wise All Students
+# METHOD 2: Subject wise All Students (Ek subject ke saare students)
 @app.get("/students/subject/{subject_name}", response_model=List[StudentResultSchema])
 def get_all_students_by_subject(
     subject_name: str, skip: int = 0, limit: int = 50000, db: Session = Depends(get_db)
 ):
+    """
+    Ek specific subject ke sabhi students ki list return karega.
+    """
     students = (
         db.query(StudentResultModel)
         .filter(func.lower(StudentResultModel.subject) == subject_name.lower())
@@ -538,6 +558,7 @@ def get_all_students_by_subject(
         .limit(limit)
         .all()
     )
+    # print(topper)
 
     if not students:
         raise HTTPException(
@@ -550,6 +571,9 @@ def get_all_students_by_subject(
 # METHOD 3: Get List of All Unique Subjects
 @app.get("/subjects/", response_model=List[str])
 def get_all_unique_subjects(db: Session = Depends(get_db)):
+    """
+    Database me jitne bhi unique subjects hain, unki list return karega.
+    """
     results = db.query(StudentResultModel.subject).distinct().all()
     subjects = [row[0] for row in results if row[0] is not None]
 
@@ -557,3 +581,6 @@ def get_all_unique_subjects(db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No subjects found in database")
 
     return subjects
+
+
+# python -m uvicorn main:app --reload
