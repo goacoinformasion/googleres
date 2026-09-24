@@ -147,7 +147,7 @@
                     e("div", "N98", [btn])
                 ]));
             }
-            return e("div", "__root", [e("h2", "N02", "Some Merit List 2023-25"), e("section", "topper-section", [e("h3", "N06", "High Achievers"), b])]);
+            return e("div", "__root", [e("h2", "N02", "NPU High Achievers Merit List | PG Session 2023-25 (Released Sept 21, 2026)"), e("section", "topper-section", [e("h3", "N06", "High Achievers"), b])]);
         };
 
     r.onChange(async u => {
