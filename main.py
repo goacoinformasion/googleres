@@ -392,14 +392,18 @@ def get_db():
         db.close()
 
 
+origins = [
+    "https://npupgresult.blogspot.com",
+    "http://npupgresult.blogspot.com",
+    "https://www.npupgresult.blogspot.com",
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https://.*\.blogspot\.com",  # Sabhi blogspot subdomains ko allow karega
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 
 # ----------------- STATIC FILES MOUNT KAREIN -----------------
