@@ -1,6 +1,8 @@
 import typing
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from sqlalchemy import create_engine, Column, Integer, String, Float, func
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from pydantic import BaseModel
@@ -388,7 +390,7 @@ class StudentResultSchema(BaseModel):
 # ---------------------------------------------------------
 # 4. FASTAPI APP & DEPENDENCY
 # ---------------------------------------------------------
-app = FastAPI(redirect_slashes=False)
+app = FastAPI(title="Student Result Management API")
 
 
 # 1. Origins define karein jo aapke frontend ko allow karein
@@ -401,6 +403,14 @@ origins = [
 # origins = ["*"]
 
 # 2. CORS Middleware add karein
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# 2. CORS Middleware add karein
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Front-end kisi bhi domain/file se connect ho sakega
@@ -408,6 +418,24 @@ app.add_middleware(
     allow_methods=["*"],  # GET, POST, PUT, DELETE sabhi methods allow honge
     allow_headers=["*"],  # Sabhi request headers allow honge
 )
+
+
+
+# ----------------- STATIC FILES MOUNT KAREIN -----------------
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Templates directory specify karein
+templates = Jinja2Templates(directory="templates")
+
+# ----------------- HOME / INDEX ROUTE -----------------
+@app.get("/")
+def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+# ---------------------------------------------------------
+# 5. EXISTING ENDPOINTS
+# ---------------------------------------------------------
+
 
 def get_db():
     db = SessionLocal()
@@ -488,7 +516,7 @@ def get_all_subject_toppers(db: Session = Depends(get_db)):
         top_student = (
             db.query(StudentResultModel)
             .filter(StudentResultModel.subject == subj)
-            .order_by(func.cast(StudentResultModel.f_total, Float).desc())
+            .order_by(func.cast(StudentResultModel.s3_percentage, Float).desc())
             .first()
         )
         if top_student:
