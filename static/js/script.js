@@ -147,7 +147,7 @@
                     e("div", "N98", [btn])
                 ]));
             }
-            return e("div", "__root", [e("h2", "N02", "🎓 NPU All Master of Arts - Merit List"), e("section", "topper-section", [e("h3", "N06", "🏆 Top Achievers & Subject Ranks"), b])]);
+            return e("div", "__root", [e("h2", "N02", "NPU All Master of Arts - Merit List 2023-25"), e("section", "topper-section", [e("h3", "N06", "High Achievers"), b])]);
         };
 
     r.onChange(async u => {
