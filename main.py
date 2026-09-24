@@ -395,15 +395,13 @@ def get_db():
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://127.0.0.1:8000/",
-        "http://127.0.0.1:5500",# VS Code Live Server
-        "https://npupgresult.blogspot.com/"  # Production URL
+        "https://npupgresult.blogspot.com",  # Aapka Blogspot Domain
+        "http://localhost:3000",             # Local testing ke liye (optional)
     ],
     allow_credentials=True,
-    allow_methods=["*"],  # GET, POST, PUT, DELETE sabhi methods allow honge
-    allow_headers=["*"],  # Sabhi request headers allow honge
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-
 
 # ----------------- STATIC FILES MOUNT KAREIN -----------------
 app.mount("/static", StaticFiles(directory="static"), name="static")
