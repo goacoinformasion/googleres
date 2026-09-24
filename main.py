@@ -388,7 +388,7 @@ class StudentResultSchema(BaseModel):
 # ---------------------------------------------------------
 # 4. FASTAPI APP & DEPENDENCY
 # ---------------------------------------------------------
-app = FastAPI(title="Student Result Management API")
+app = FastAPI(redirect_slashes=False)
 
 
 # 1. Origins define karein jo aapke frontend ko allow karein
