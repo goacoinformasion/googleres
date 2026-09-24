@@ -397,7 +397,7 @@ app.add_middleware(
     allow_origins=[
         "http://127.0.0.1:8000/",
         "http://127.0.0.1:5500",# VS Code Live Server
-        ""https://npupgresult.blogspot.com/""  # Production URL
+        "https://npupgresult.blogspot.com/"  # Production URL
     ],
     allow_credentials=True,
     allow_methods=["*"],  # GET, POST, PUT, DELETE sabhi methods allow honge
