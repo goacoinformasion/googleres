@@ -496,7 +496,7 @@ def get_all_subject_toppers(db: Session = Depends(get_db)):
         top_student = (
             db.query(StudentResultModel)
             .filter(StudentResultModel.subject == subj)
-            .order_by(func.cast(StudentResultModel.s3_percentage, Float).desc())
+            .order_by(func.cast(StudentResultModel.f_total, Float).desc())
             .first()
         )
         if top_student:
@@ -514,7 +514,7 @@ def get_subject_topper_s3(subject_name: str, db: Session = Depends(get_db)):
     topper = (
         db.query(StudentResultModel)
         .filter(func.lower(StudentResultModel.subject) == subject_name.lower())
-        .order_by(func.cast(StudentResultModel.s3_percentage, Float).desc())
+        .order_by(func.cast(StudentResultModel.f_total, Float).desc())
         .first()
     )
 
