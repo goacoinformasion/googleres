@@ -22,7 +22,7 @@ Base = declarative_base()
 
 
 # ---------------------------------------------------------
-# 2. SQLALCHEMY MODEL
+# 2. SQLALCHEMY MODEL (Saare Columns Add Kar Diye Hain)
 # ---------------------------------------------------------
 class StudentResultModel(Base):
     __tablename__ = "student_results"
@@ -193,7 +193,7 @@ class StudentResultModel(Base):
     held_month = Column(String, nullable=True)
     held_year = Column(String, nullable=True)
     date_publication = Column(String, nullable=True)
-    download_count = Column(Integer, nullable=True, default=0)
+    download_count = Column(Integer, default=0, nullable=True)
     coursename = Column(String, nullable=True)
     sassion = Column(String, nullable=True)
     honours = Column(String, nullable=True)
@@ -388,21 +388,10 @@ class StudentResultSchema(BaseModel):
 
 
 # ---------------------------------------------------------
-# 4. FASTAPI APP & DEPENDENCY
+# 4. FASTAPI APP & MIDDLEWARE
 # ---------------------------------------------------------
-app = FastAPI(title="Student Result Management API")
+app = FastAPI(title="Student Result Management API", redirect_slashes=False)
 
-
-# 1. Origins define karein jo aapke frontend ko allow karein
-origins = [
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
-]
-
-# Development ke liye aap sabhi origins ko allow karne ke liye ["*"] bhi use kar sakte hain:
-# origins = ["*"]
-
-# 2. CORS Middleware add karein
 def get_db():
     db = SessionLocal()
     try:
@@ -410,43 +399,28 @@ def get_db():
     finally:
         db.close()
 
-# 2. CORS Middleware add karein
+# CORS Middleware (Surgical Fix for CORS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Front-end kisi bhi domain/file se connect ho sakega
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # GET, POST, PUT, DELETE sabhi methods allow honge
-    allow_headers=["*"],  # Sabhi request headers allow honge
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-
-
-# ----------------- STATIC FILES MOUNT KAREIN -----------------
+# Static & Template Configuration
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Templates directory specify karein
 templates = Jinja2Templates(directory="templates")
+
 
 # ----------------- HOME / INDEX ROUTE -----------------
 @app.get("/")
 def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-# ---------------------------------------------------------
-# 5. EXISTING ENDPOINTS
-# ---------------------------------------------------------
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 # ---------------------------------------------------------
-# 5. EXISTING ENDPOINTS
+# 5. API ENDPOINTS
 # ---------------------------------------------------------
 
 @app.post("/results/", response_model=StudentResultSchema, status_code=status.HTTP_201_CREATED)
@@ -456,15 +430,10 @@ def create_student_result(record: StudentResultSchema, db: Session = Depends(get
         return JSONResponse(
             status_code=400,
             content={
-                "insurt": False,
+                "insert": False,
                 "detail": f"Record with slno {record.slno} already exists."
             }
         )
-        # raise HTTPException(
-        #     status_code=400,
-        #     insurt=False,
-        #     detail=f"Record with slno {record.slno} already exists.",
-        # )
     
     new_record = StudentResultModel(**record.model_dump())
     db.add(new_record)
@@ -474,7 +443,7 @@ def create_student_result(record: StudentResultSchema, db: Session = Depends(get
 
 
 @app.get("/results/", response_model=List[StudentResultSchema])
-def get_all_results(skip: int = 0, limit: int = 50000, db: Session = Depends(get_db)):
+def get_all_results(skip: int = 0, limit: int = 500, db: Session = Depends(get_db)):
     return db.query(StudentResultModel).offset(skip).limit(limit).all()
 
 
@@ -494,15 +463,8 @@ def get_result_by_rollno(rollno: str, db: Session = Depends(get_db)):
     return record
 
 
-# ALL SUBJECT TOPPERS IN A SINGLE DICTIONARY
 @app.get("/toppers")
 def get_all_subject_toppers(db: Session = Depends(get_db)):
-    """
-    Har ek subject ka topper (highest s3_percentage) nikal kar 
-    { "Botany": {...student_data...}, "Chemistry": {...student_data...} } 
-    format me return karta hai.
-    """
-    # 1. Sabhi unique subjects nikalen
     distinct_subjects = db.query(StudentResultModel.subject).distinct().all()
     subjects = [s[0] for s in distinct_subjects if s[0]]
 
@@ -510,8 +472,6 @@ def get_all_subject_toppers(db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Database me koi subject nahi mila.")
 
     toppers_summary = {}
-
-    # 2. Har subject ke highest s3_percentage waale student ko fetch karein
     for subj in subjects:
         top_student = (
             db.query(StudentResultModel)
@@ -524,18 +484,9 @@ def get_all_subject_toppers(db: Session = Depends(get_db)):
 
     return toppers_summary
 
-# ---------------------------------------------------------
-# 6. NEW SUBJECT-BASED ENDPOINTS (3 New Methods)
-# ---------------------------------------------------------
 
-# METHOD 1: Subject wise Topper (Highest s3_percentage wala student)
 @app.get("/toppers/subject/{subject_name}", response_model=StudentResultSchema)
 def get_subject_topper_s3(subject_name: str, db: Session = Depends(get_db)):
-    """
-    Ek specific subject ke andar jis student ki s3_percentage sabse zyada (highest)
-    hai, use return karega.
-    """
-    # SQLite me s3_percentage string format me ho sakta hai, isliye CAST karke Float me convert kar rahe hain
     topper = (
         db.query(StudentResultModel)
         .filter(func.lower(StudentResultModel.subject) == subject_name.lower())
@@ -543,20 +494,14 @@ def get_subject_topper_s3(subject_name: str, db: Session = Depends(get_db)):
         .first()
     )
 
-    
-
     if not topper:
         raise HTTPException(status_code=404, detail=f"No student found for subject: {subject_name}")
 
     return topper
 
 
-# METHOD 2: Subject wise All Students (Ek subject ke saare students)
 @app.get("/students/subject/{subject_name}", response_model=List[StudentResultSchema])
-def get_all_students_by_subject(subject_name: str, skip: int = 0, limit: int = 50000, db: Session = Depends(get_db)):
-    """
-    Ek specific subject ke sabhi students ki list return karega.
-    """
+def get_all_students_by_subject(subject_name: str, skip: int = 0, limit: int = 500, db: Session = Depends(get_db)):
     students = (
         db.query(StudentResultModel)
         .filter(func.lower(StudentResultModel.subject) == subject_name.lower())
@@ -564,7 +509,6 @@ def get_all_students_by_subject(subject_name: str, skip: int = 0, limit: int = 5
         .limit(limit)
         .all()
     )
-    # print(topper)
 
     if not students:
         raise HTTPException(status_code=404, detail=f"No students found for subject: {subject_name}")
@@ -572,12 +516,8 @@ def get_all_students_by_subject(subject_name: str, skip: int = 0, limit: int = 5
     return students
 
 
-# METHOD 3: Get List of All Unique Subjects
 @app.get("/subjects/", response_model=List[str])
 def get_all_unique_subjects(db: Session = Depends(get_db)):
-    """
-    Database me jitne bhi unique subjects hain, unki list return karega.
-    """
     results = db.query(StudentResultModel.subject).distinct().all()
     subjects = [row[0] for row in results if row[0] is not None]
     
@@ -585,5 +525,3 @@ def get_all_unique_subjects(db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No subjects found in database")
 
     return subjects
-
-# python -m uvicorn main:app --reload
