@@ -392,12 +392,15 @@ def get_db():
         db.close()
 
 
+
 origins = [
-    "https://npupgresult.blogspot.com",
-    "http://npupgresult.blogspot.com",
-    "https://www.npupgresult.blogspot.com",
+    "https://pgresult.up.railway.app",
+    "http://localhost",
+    "http://localhost:8000",
+    "*"
 ]
 
+# 1. CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -405,6 +408,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 2. Proxy Headers Middleware (Aakhri mein comma mat lagana)
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
 
 # Static Files & Templates Mount
 app.mount("/static", StaticFiles(directory="static"), name="static")
