@@ -151,6 +151,7 @@ table {
     min-width: 680px;
     border-radius: 6px;
     overflow: hidden;
+    margin: auto;
 }
 
 table thead {
