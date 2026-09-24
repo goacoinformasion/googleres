@@ -166,6 +166,7 @@ tr {
 th {
     padding: 10px;
     text-transform: capitalize;
+    text-align: left;
 }
 
 tr:nth-child(even) {
