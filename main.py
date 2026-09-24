@@ -395,9 +395,10 @@ def get_db():
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://npupgresult.blogspot.com/"
+        "http://127.0.0.1:8000/",
+        "http://127.0.0.1:5500",# VS Code Live Server
+        ""https://npupgresult.blogspot.com/""  # Production URL
     ],
-    allow_origins=["*"],  # Front-end kisi bhi domain/file se connect ho sakega
     allow_credentials=True,
     allow_methods=["*"],  # GET, POST, PUT, DELETE sabhi methods allow honge
     allow_headers=["*"],  # Sabhi request headers allow honge
