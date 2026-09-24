@@ -392,15 +392,14 @@ def get_db():
         db.close()
 
 
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://npupgresult.blogspot.com",  # Aapka Blogspot Domain
-        "http://localhost:3000",             # Local testing ke liye (optional)
-    ],
+    allow_origin_regex=r"https://.*\.blogspot\.com",  # Sabhi blogspot subdomains ko allow karega
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # ----------------- STATIC FILES MOUNT KAREIN -----------------
