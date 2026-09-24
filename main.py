@@ -588,5 +588,6 @@ def get_all_unique_subjects(db: Session = Depends(get_db)):
 
     return subjects
 
-
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", debug=True)
 # python -m uvicorn main:app --reload
