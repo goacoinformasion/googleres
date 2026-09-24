@@ -401,14 +401,12 @@ origins = [
 # origins = ["*"]
 
 # 2. CORS Middleware add karein
-
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Sabhi origins ko allow karne ke liye
+    allow_origins=["*"],  # Front-end kisi bhi domain/file se connect ho sakega
     allow_credentials=True,
-    allow_methods=["*"],  # GET, POST, PUT, DELETE sab allow karein
-    allow_headers=["*"],
+    allow_methods=["*"],  # GET, POST, PUT, DELETE sabhi methods allow honge
+    allow_headers=["*"],  # Sabhi request headers allow honge
 )
 
 def get_db():
