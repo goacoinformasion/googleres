@@ -416,7 +416,6 @@ app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-hy
 # ----------------- HOME / INDEX ROUTE -----------------
 @app.get("/")
 def read_root(request: Request):
